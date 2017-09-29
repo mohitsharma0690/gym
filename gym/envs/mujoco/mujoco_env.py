@@ -78,7 +78,7 @@ class MujocoEnv(gym.Env):
     # -----------------------------
 
     def _reset(self):
-        mjlib.mj_resetData(self.model.ptr, self.data.ptr)
+        self.sim.reset()
         ob = self.reset_model()
         if self.viewer is not None:
             self.viewer.autoscale()
@@ -87,10 +87,10 @@ class MujocoEnv(gym.Env):
 
     def set_state(self, qpos, qvel):
         assert qpos.shape == (self.model.nq,) and qvel.shape == (self.model.nv,)
-        self.data.qpos = qpos
-        self.data.qvel = qvel
-        self.model._compute_subtree()  # pylint: disable=W0212
-        self.model.forward()
+        self.data.qpos[:] = qpos
+        self.data.qvel[:] = qvel
+        # self.sim._compute_subtree()  # pylint: disable=W0212
+        self.sim.forward()
 
     @property
     def dt(self):
