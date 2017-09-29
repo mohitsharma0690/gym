@@ -81,9 +81,8 @@ class MujocoEnv(gym.Env):
         self.sim.reset()
         ob = self.reset_model()
         if self.viewer is not None:
-            pass
             # self.viewer.autoscale()
-            # self.viewer_setup()
+            self.viewer_setup()
         return ob
 
     def set_state(self, qpos, qvel):
@@ -121,7 +120,7 @@ class MujocoEnv(gym.Env):
             self.viewer = mujoco_py.MjViewer(self.sim)
             # self.viewer.start()
             # self.viewer.set_model(self.model)
-            self.viewer_setup()
+        self.viewer_setup()
         return self.viewer
 
     def get_body_com(self, body_name):
