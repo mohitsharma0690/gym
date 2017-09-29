@@ -9,7 +9,8 @@ import six
 
 try:
     import mujoco_py
-    from mujoco_py.mjlib import mjlib
+    from mujoco_py import MjSim
+    # from mujoco_py.mjlib import mjlib
 except ImportError as e:
     raise error.DependencyNotInstalled("{}. (HINT: you need to install mujoco_py, and also perform the setup instructions here: https://github.com/openai/mujoco-py/.)".format(e))
 
@@ -25,8 +26,9 @@ class MujocoEnv(gym.Env):
         if not path.exists(fullpath):
             raise IOError("File %s does not exist" % fullpath)
         self.frame_skip = frame_skip
-        self.model = mujoco_py.MjModel(fullpath)
-        self.data = self.model.data
+        self.model = mujoco_py.load_model_from_path(fullpath)
+        self.sim = MjSim(self.model)
+        self.data = self.sim.data
         self.viewer = None
 
         self.metadata = {
@@ -34,8 +36,8 @@ class MujocoEnv(gym.Env):
             'video.frames_per_second': int(np.round(1.0 / self.dt))
         }
 
-        self.init_qpos = self.model.data.qpos.ravel().copy()
-        self.init_qvel = self.model.data.qvel.ravel().copy()
+        self.init_qpos = self.data.qpos.ravel().copy()
+        self.init_qvel = self.data.qvel.ravel().copy()
         observation, _reward, done, _info = self._step(np.zeros(self.model.nu))
         assert not done
         self.obs_dim = observation.size
@@ -85,8 +87,8 @@ class MujocoEnv(gym.Env):
 
     def set_state(self, qpos, qvel):
         assert qpos.shape == (self.model.nq,) and qvel.shape == (self.model.nv,)
-        self.model.data.qpos = qpos
-        self.model.data.qvel = qvel
+        self.data.qpos = qpos
+        self.data.qvel = qvel
         self.model._compute_subtree()  # pylint: disable=W0212
         self.model.forward()
 
@@ -95,9 +97,9 @@ class MujocoEnv(gym.Env):
         return self.model.opt.timestep * self.frame_skip
 
     def do_simulation(self, ctrl, n_frames):
-        self.model.data.ctrl = ctrl
+        self.data.ctrl[:] = ctrl
         for _ in range(n_frames):
-            self.model.step()
+            self.sim.step()
 
     def _render(self, mode='human', close=False):
         if close:
@@ -123,7 +125,7 @@ class MujocoEnv(gym.Env):
 
     def get_body_com(self, body_name):
         idx = self.model.body_names.index(six.b(body_name))
-        return self.model.data.com_subtree[idx]
+        return self.data.com_subtree[idx]
 
     def get_body_comvel(self, body_name):
         idx = self.model.body_names.index(six.b(body_name))
@@ -131,10 +133,10 @@ class MujocoEnv(gym.Env):
 
     def get_body_xmat(self, body_name):
         idx = self.model.body_names.index(six.b(body_name))
-        return self.model.data.xmat[idx].reshape((3, 3))
+        return self.data.xmat[idx].reshape((3, 3))
 
     def state_vector(self):
         return np.concatenate([
-            self.model.data.qpos.flat,
-            self.model.data.qvel.flat
+            self.data.qpos.flat,
+            self.data.qvel.flat
         ])
