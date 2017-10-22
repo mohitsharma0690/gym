@@ -124,16 +124,16 @@ class MujocoEnv(gym.Env):
         return self.viewer
 
     def get_body_com(self, body_name):
-        idx = self.model.body_names.index(six.b(body_name))
-        return self.data.com_subtree[idx]
+        idx = self.model.body_names.index(body_name)
+        return self.data.body_xpos[idx]
 
     def get_body_comvel(self, body_name):
-        idx = self.model.body_names.index(six.b(body_name))
-        return self.model.body_comvels[idx]
+        idx = self.model.body_names.index(body_name)
+        return self.data.body_xvelp[idx]
 
     def get_body_xmat(self, body_name):
-        idx = self.model.body_names.index(six.b(body_name))
-        return self.data.xmat[idx].reshape((3, 3))
+        idx = self.model.body_names.index(body_name)
+        return self.data.body_xmat[idx].reshape((3, 3))
 
     def state_vector(self):
         return np.concatenate([
