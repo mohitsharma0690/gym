@@ -6,6 +6,7 @@ import numpy as np
 from os import path
 import gym
 import six
+import time
 
 try:
     import mujoco_py
@@ -97,9 +98,12 @@ class MujocoEnv(gym.Env):
         return self.model.opt.timestep * self.frame_skip
 
     def do_simulation(self, ctrl, n_frames):
+        t0 = time.time()
         self.data.ctrl[:] = ctrl
         for _ in range(n_frames):
             self.sim.step()
+        if self.viewer is not None:
+            self.viewer.sim_time = time.time() - t0
 
     def _render(self, mode='human', close=False):
         if close:
