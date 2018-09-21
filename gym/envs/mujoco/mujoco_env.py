@@ -114,6 +114,11 @@ class MujocoEnv(gym.Env):
             return data[::-1, :, :]
         elif mode == 'human':
             self._get_viewer(mode).render()
+            # window size used for old mujoco-py:
+            data = self._get_viewer(mode)._read_pixels_as_in_window()
+            # original image is NOT upside-down, so don't flip it
+            return data
+
 
     def close(self):
         if self.viewer is not None:
