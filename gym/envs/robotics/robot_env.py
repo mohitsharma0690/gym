@@ -86,7 +86,7 @@ class RobotEnv(gym.GoalEnv):
             # self.viewer.finish()
             self.viewer = None
 
-    def render(self, mode='human'):
+    def render(self, mode='human', context=None):
         self._render_callback()
         if mode == 'rgb_array':
             self._get_viewer().render()
@@ -96,7 +96,10 @@ class RobotEnv(gym.GoalEnv):
             # original image is upside-down, so flip it
             return data[::-1, :, :]
         elif mode == 'human':
-            self._get_viewer().render()
+            self._get_viewer().render(context=context)
+            data = self._get_viewer()._read_pixels_as_in_window()
+            # original image is NOT upside-down, so don't flip it
+            return data
 
     def _get_viewer(self):
         if self.viewer is None:

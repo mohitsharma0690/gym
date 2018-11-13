@@ -100,7 +100,8 @@ class VideoRecorder(object):
         logger.debug('Capturing video frame: path=%s', self.path)
 
         render_mode = 'ansi' if self.ansi_mode else 'rgb_array'
-        frame = self.env.render(mode='human')
+        print(render_mode)
+        frame = self.env.render(mode='human', context=context)
 
         if context is not None:
             frame = np.ascontiguousarray(frame, dtype=np.uint8)
